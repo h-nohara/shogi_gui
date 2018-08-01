@@ -3,6 +3,7 @@
 
 from __init__ import *
 
+
 class TextAction(BoxLayout):
     
     def __init__(self):
@@ -38,6 +39,12 @@ class TextHeader(BoxLayout):
 
 
 class TextDelButton(Button):
+    
+    def __init__(self, *kargs, **kwargs):
+        
+        super().__init__(*kargs, **kwargs)
+
+        self.background_color = RGBA_to_kivy_format([0, 0, 255, 1])
 
     def on_press(self):
 

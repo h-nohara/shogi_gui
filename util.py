@@ -161,6 +161,22 @@ def loc_usi2normal(loc):
 
 
 
+
+def RGBA_to_kivy_format(rgba):
+    
+    '''
+    RGBA_to_kivy_format([255, 104, 255, 0.5])
+    '''
+
+    assert isinstance(rgba, list)
+    assert(len(rgba)==4)
+    RGB = rgba[:-1]
+    A = rgba[-1]
+    return list(np.array(RGB, dtype=np.float)/255.) + [A]
+
+
+
+
 def get_piece_from_board(board, loc):
 
     '''

@@ -4,7 +4,7 @@
 from __init__ import *
 
 import shogi
-from util import get_piece_from_board, get_pieces_in_hand, locs_normal, loc_usi2normal, loc_normal2usi, PieceNames_normal_NotNari
+from util import get_piece_from_board, get_pieces_in_hand, locs_normal, loc_usi2normal, loc_normal2usi, PieceNames_normal_NotNari, PieceName_normal2kanji
 
 class ShogiBoard(BoxLayout):
     
@@ -77,6 +77,10 @@ class ShogiBoard(BoxLayout):
         
         '''
         locの位置の駒が動ける範囲を表示する
+
+        loc(str) : 動かす駒の元の場所 "55"
+        
+        return(str) : "56", "77+"
         '''
         
         all_legal_moves = list(self.board.generate_legal_moves())
@@ -106,7 +110,7 @@ class ShogiBoard(BoxLayout):
 
         # 移動可能なマス目の背景色を変化
         for loc in self.now_legal_moves:
-            self.MainBoard.loc_piece_dict[loc[:2]].background_color = get_color_from_hex("#FFCC66")
+            self.MainBoard.loc_piece_dict[loc[:2]].background_color = RGBA_to_kivy_format([0, 0, 255, 0.5])
 
 
     def piece_touched(self, loc):
@@ -212,6 +216,7 @@ class MainBoard(GridLayout):
         for loc in locs_normal:
             is_sente, piece_name = get_piece_from_board(self.parent_layout.board, loc)
             if piece_name is not None:
+                piece_name = PieceName_normal2kanji[piece_name]  # 漢字表記に
                 if not is_sente:
                     piece_name = "v" + piece_name
                 self.loc_piece_dict[loc].text = piece_name
@@ -278,7 +283,7 @@ class SubBoard(BoxLayout):
 
         for piece in PieceNames_normal_NotNari:
             self.piece_n_dict[piece] = pieces_in_hand[piece]
-            self.piece_button_dict[piece].text = "{}:{}".format(piece, self.piece_n_dict[piece])
+            self.piece_button_dict[piece].text = "{}:{}".format(PieceName_normal2kanji[piece], self.piece_n_dict[piece])
 
     
     def child_touched(self, loc):
