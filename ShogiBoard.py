@@ -54,10 +54,12 @@ class ShogiBoard(BoxLayout):
         '''局面をリセット＋表示をリセット＋ユーザ操作の現在をリセット
         '''
         
+        # 局面を初期状態に
         self.board.reset()
-        
+
+        # 表示に反映
         for b in self.main_sub_boards:
-            b.reset()
+            b.reflect_board_state()
 
         self.init_state_now()
 
@@ -141,16 +143,16 @@ class ShogiBoard(BoxLayout):
                     # Boardエンジンに反映させる
                     self.board.push_usi(loc_normal2usi(self.now_touched_loc) + loc_normal2usi(loc))
 
+                    # 盤面を表示に反映
                     for b in self.main_sub_boards:
-                        b.reset_text_on_board()  # 表示をリセット
-                        b.reflect_board_state()  # 盤面を反映させた表示に
+                        b.reflect_board_state()
 
                     self.init_state_now()  # ユーザの操作状況をリセット
 
             else:
                 
+                # 盤面を表示に反映
                 for b in self.main_sub_boards:
-                    b.reset_text_on_board()  # 表示をリセット
                     b.reflect_board_state()  # 盤面を反映させた表示に
 
                 # ユーザの操作状況を反映
@@ -198,28 +200,27 @@ class MainBoard(GridLayout):
 
 
 
-    def reset(self):
-        
-        self.reset_text_on_board()
-        self.reflect_board_state()
-
-
-    # 盤上の全ての文字を""にする
-    def reset_text_on_board(self):
-        for square_obj in self.loc_piece_dict.values():
-            square_obj.text = ""
-            square_obj.background_color = self.default_color
-
-    # 現在の局面（boardインスタンス）の駒位置を画面に反映させる
     def reflect_board_state(self):
         
+        '''
+        現在の局面（boardインスタンス）の駒位置を画面に反映させる
+        '''
+                
         for loc in locs_normal:
             is_sente, piece_name = get_piece_from_board(self.parent_layout.board, loc)
+
             if piece_name is not None:
                 piece_name = PieceName_normal2kanji[piece_name]  # 漢字表記に
                 if not is_sente:
                     piece_name = "v" + piece_name
                 self.loc_piece_dict[loc].text = piece_name
+
+            else:
+                
+                self.loc_piece_dict[loc].text = ""
+
+            self.loc_piece_dict[loc].background_color = self.default_color  # 背景色をデフォルトに
+
         
 
 
@@ -260,19 +261,12 @@ class SubBoard(BoxLayout):
 
 
 
-
-    def reset(self):
-        
-        self.reset_text_on_board()
-        self.reflect_board_state()
-
-
-    # 盤上の全ての文字を""にする
-    def reset_text_on_board(self):
-        pass
-
-    # 現在の局面（boardインスタンス）の駒位置を画面に反映させる
     def reflect_board_state(self):
+        
+        '''
+        現在の局面（boardインスタンス）の駒位置を画面に反映させる
+        '''
+        
         
         pieces_in_hand = get_pieces_in_hand(self.parent_layout.board)
 
@@ -388,8 +382,7 @@ class NariCheckWindow(ModalView):
         self.my_parent.board.push_usi(loc_normal2usi(self.start_loc) + loc_normal2usi(self.destination_loc))
 
         for b in self.my_parent.main_sub_boards:
-            b.reset_text_on_board()  # 表示をリセット
-            b.reflect_board_state()  # 盤面を反映させた表示に
+            b.reflect_board_state()  # 盤面を表示に反映
 
         self.my_parent.init_state_now()  # ユーザの操作状況をリセット
 
