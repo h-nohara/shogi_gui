@@ -44,7 +44,7 @@ class TextDelButton(Button):
         
         super().__init__(*kargs, **kwargs)
 
-        self.background_color = RGBA_to_kivy_format([0, 0, 255, 1])
+        # self.background_color = RGBA_to_kivy_format([0, 0, 255, 1])
 
     def on_press(self):
 

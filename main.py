@@ -38,7 +38,8 @@ class ShogiApp(App):
         super().__init__()
 
         self.title = "make_movie"
-        self.layout = BoxLayout(orientation='horizontal')
+        self.myname = "ShogiApp"
+        self.layout = BoxWithMyParent(my_parent=self, orientation='horizontal')
 
         # 左（将棋盤等）
         self.Left = Left()
@@ -58,9 +59,19 @@ class ShogiApp(App):
         self.layout.add_widget(self.Right)
 
 
+
     def build(self):
         
         return self.layout
+
+
+
+class BoxWithMyParent(BoxLayout):
+    
+    def __init__(self, my_parent, *kargs, **kwargs):
+        
+        super().__init__(*kargs, **kwargs)
+        self.my_parent = my_parent
 
 
         

@@ -11,7 +11,7 @@ class ShogiBoard(BoxLayout):
     def __init__(self):
         
         super().__init__()
-
+        self.myname = "ShogiBoard"
         self.orientation = "vertical"
 
         # boardオブジェクト
@@ -104,7 +104,7 @@ class ShogiBoard(BoxLayout):
     def show_legal_moves(self, loc):
         
         '''
-        動ける範囲の背景色を変化させる
+        動ける範囲を保存し、その背景色を変化させる
         '''
         
         # 移動可能なマス目を取得
@@ -113,6 +113,27 @@ class ShogiBoard(BoxLayout):
         # 移動可能なマス目の背景色を変化
         for loc in self.now_legal_moves:
             self.MainBoard.loc_piece_dict[loc[:2]].background_color = RGBA_to_kivy_format([0, 0, 255, 0.5])
+
+
+    def push_and_reflect_and_init_user_state(self, start_loc, destination_loc):
+        
+        '''
+        >>> push_and_reflect_and_init_user_state("77", "22+")  # 22成り
+        '''
+        
+        # Boardエンジンに反映させる
+        self.board.push_usi(loc_normal2usi(start_loc) + loc_normal2usi(destination_loc))
+
+        # 盤面を表示に反映
+        for b in self.main_sub_boards:
+            b.reflect_board_state()
+
+        # ユーザの操作状況をリセット
+        self.init_state_now()
+
+        # アクション履歴を更新
+        action = {"move" : start_loc + destination_loc}
+        self.parent.parent.my_parent.Center.HistoryViewer.add_action(action)
 
 
     def piece_touched(self, loc):
@@ -125,29 +146,26 @@ class ShogiBoard(BoxLayout):
             
             # 移動可能な場所を押された時
             if (loc in self.now_legal_moves) or (loc+"+" in self.now_legal_moves):
+                
 
-                # 必ずならなければいけない時
-                if (loc not in self.now_legal_moves) and (loc+"+" in self.now_legal_moves):
-                    loc = loc + "+"
-
-                # 成るか成らないか選べる時
-                elif (loc in self.now_legal_moves) and (loc+"+" in self.now_legal_moves):
+                # 成るか成らないか選べる時は選択ウィンドウを出し、その後の処理はウィンドウウィジェット側で行う
+                if (loc in self.now_legal_moves) and (loc+"+" in self.now_legal_moves):
                     self.NariCheckWindow.start_loc = self.now_touched_loc
                     self.NariCheckWindow.destination_loc = loc
                     self.NariCheckWindow.open()
 
                     
                 # 選べない時
-                if ((loc not in self.now_legal_moves) and (loc+"+" in self.now_legal_moves)) or ((loc in self.now_legal_moves) and (loc+"+" not in self.now_legal_moves)):
+                else:
+                    
+                    # 成れない時は自動でそのまま
+
+                    # 必ず成らなければいけない時
+                    if (loc not in self.now_legal_moves) and (loc+"+" in self.now_legal_moves):
+                        loc = loc + "+"
+
+                    self.push_and_reflect_and_init_user_state(start_loc=self.now_touched_loc, destination_loc=loc)
                 
-                    # Boardエンジンに反映させる
-                    self.board.push_usi(loc_normal2usi(self.now_touched_loc) + loc_normal2usi(loc))
-
-                    # 盤面を表示に反映
-                    for b in self.main_sub_boards:
-                        b.reflect_board_state()
-
-                    self.init_state_now()  # ユーザの操作状況をリセット
 
             else:
                 
@@ -327,6 +345,7 @@ class NariCheckWindow(ModalView):
         
         '''
         NariCheckWindow - main_view - NariCheckButton * 2
+        my_parentはShogiBoardビューを想定
         '''
         
         super().__init__()
@@ -370,22 +389,15 @@ class NariCheckWindow(ModalView):
     
     def click(self, naru):
                 
-        self.handle_board(naru)
-        self.dismiss()
+        self.handle_board(naru)  # boardオブジェクト、表示等に反映させる
+        self.dismiss()  # ウィンドウを閉じる
 
     def handle_board(self, naru):
         
         if naru:
             self.destination_loc = self.destination_loc + "+"
-        
-        # Boardエンジンに反映させる
-        self.my_parent.board.push_usi(loc_normal2usi(self.start_loc) + loc_normal2usi(self.destination_loc))
 
-        for b in self.my_parent.main_sub_boards:
-            b.reflect_board_state()  # 盤面を表示に反映
-
-        self.my_parent.init_state_now()  # ユーザの操作状況をリセット
-
+        self.my_parent.push_and_reflect_and_init_user_state(start_loc=self.start_loc, destination_loc=self.destination_loc)
 
         self.start_loc = None
         self.destination_loc = None
